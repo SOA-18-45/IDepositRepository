@@ -3,6 +3,8 @@ IDepositRepository
 
 Twórcy
 ---
+ - Mysiak
+ - Stanaszek
 
 Opis
 ---
