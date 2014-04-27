@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Runtime.Serialization;
+using System.Guid;
 
 namespace IDepositRepository {
     class Program {
@@ -22,17 +23,17 @@ namespace IDepositRepository {
     [ServiceContract]
     public interface IDepositRepository {
         [OperationContract]
-        long CreateDeposit(long ClientID, long AccountNumber, string DepositType, double InterestRate);
+        Guid CreateDeposit(Guid ClientID, Guid AccountID, string DepositType, double InterestRate);
         [OperationContract]
-        DepositDetails GetDepositDetails(long DepositID);
+        DepositDetails GetDepositDetails(Guid DepositID);
     }
 
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class DepositRepository : IDepositRepository {
-        public long CreateDeposit(long ClientID, long AccountID, string DepositType, double InterestRate) {
+        public Guid CreateDeposit(Guid ClientID, Guid AccountID, string DepositType, double InterestRate) {
             DepositDetails deposit = new DepositDetails();
             deposit.ClientID = ClientID;
-            deposit.DepositID = ClientID * 1000 + 321;
+            deposit.DepositID = Guid.NewGuid();
             deposit.AccountID = AccountID;
             deposit.DepositType = DepositType;
             deposit.InterestRate = InterestRate;
@@ -40,10 +41,10 @@ namespace IDepositRepository {
             return deposit.DepositID;
         }
 
-        public DepositDetails GetDepositDetails(long DepositID) {
+        public DepositDetails GetDepositDetails(Guid DepositID) {
             DepositDetails deposit = new DepositDetails();
-            deposit.ClientID = 123456789;
-            deposit.AccountID = 1234567890123456789;
+            deposit.ClientID = DepositID;
+            deposit.AccountID = DepositID;
             deposit.DepositID = DepositID;
             deposit.DepositType = "Time Deposit";
             deposit.InterestRate = 7.5;
@@ -55,11 +56,11 @@ namespace IDepositRepository {
     [DataContract(Namespace = "IDepositRepository")]
     public class DepositDetails {
         [DataMember]
-        public long DepositID { get; set; }
+        public Guid DepositID { get; set; }
         [DataMember]
-        public long ClientID { get; set; }
+        public Guid ClientID { get; set; }
         [DataMember]
-        public long AccountID { get; set; }
+        public Guid AccountID { get; set; }
         [DataMember]
         public string DepositType { get; set; } // Current Account, Time Deposit
         [DataMember]
