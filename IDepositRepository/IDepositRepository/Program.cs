@@ -53,7 +53,7 @@ namespace IDepositRepository {
         }
     }
 
-    [DataContract(Namespace = "IDepositRepository")]
+    [DataContract]
     public class DepositDetails {
         [DataMember]
         public Guid DepositID { get; set; }
