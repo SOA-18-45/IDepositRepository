@@ -15,7 +15,7 @@ using Contracts;
 
 namespace IDepositService {
     class Program {
-        private const string myAddress = "net.tcp://localhost:50007/IDepositRepository";
+        private const string myAddress = "net.tcp://localhost:50002/IDepositRepository";
         private static IServiceRepository serviceRepository;
 
         static void Main(string[] args) {
@@ -36,12 +36,13 @@ namespace IDepositService {
                 Logger.logger.Info("Got ServiceRepository address.");
 
                 // Connecting to IServiceRepository
-                ChannelFactory<IServiceRepository> cf = new ChannelFactory<IServiceRepository>(new NetTcpBinding(), serviceRepositoryAddress);
+                ChannelFactory<IServiceRepository> cf = new ChannelFactory<IServiceRepository>(new NetTcpBinding(SecurityMode.None), serviceRepositoryAddress);
                 serviceRepository = cf.CreateChannel();
+                Logger.logger.Info("Connected to IServiceRepository.");
 
                 // Registering IDepositRepository
                 serviceRepository.registerService("IDepositRepository", myAddress);
-                Logger.logger.Info("Connected to IServiceRepository");
+                Logger.logger.Info("Registered in IServiceRepository.");
 
                 // Alive signal every 5 sec
                 Timer amAlive = new Timer(1000 * 5);
@@ -69,7 +70,7 @@ namespace IDepositService {
 
         private static void Alive(object sender, EventArgs e) {
             serviceRepository.isAlive("IDepositRepository");
-            Logger.logger.Info("Sent Alive() signal");
+            Logger.logger.Info("Sent isAlive signal.");
         }
     }
 
