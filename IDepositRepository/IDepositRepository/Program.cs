@@ -8,13 +8,9 @@ using System.Threading.Tasks;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Runtime.Serialization;
-<<<<<<< HEAD
 using System.Timers;
 using log4net;
 using Contracts;
-=======
-using System.Guid;
->>>>>>> 1f645dba5e5925b2e59e28bd92936cbe9eb9580b
 
 namespace IDepositService {
     class Program {
@@ -22,12 +18,6 @@ namespace IDepositService {
         private static IServiceRepository serviceRepository;
 
         static void Main(string[] args) {
-            // string serviceRepositoryAddress = <adres z App.Config>
-            // DepositRepository deposit = new DepositRepository(serviceRepositoryAddress);
-            // stworzenie instancji loggera - z log4net
-            // logowanie o stanie aplikacji
-            // rejestrowanie usługi w ServiceRepository
-
             // Logger Config
             log4net.Config.XmlConfigurator.Configure();
             Logger.logger.Info("Logger initialized.");
@@ -82,17 +72,8 @@ namespace IDepositService {
         }
     }
 
-<<<<<<< HEAD
     public class Logger {
         internal static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-=======
-    [ServiceContract]
-    public interface IDepositRepository {
-        [OperationContract]
-        Guid CreateDeposit(Guid ClientID, Guid AccountID, string DepositType, double InterestRate);
-        [OperationContract]
-        DepositDetails GetDepositDetails(Guid DepositID);
->>>>>>> 1f645dba5e5925b2e59e28bd92936cbe9eb9580b
     }
 
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
@@ -109,36 +90,7 @@ namespace IDepositService {
         }
 
         public DepositDetails GetDepositDetails(Guid DepositID) {
-<<<<<<< HEAD
             return null;
         }
     }
-=======
-            DepositDetails deposit = new DepositDetails();
-            deposit.ClientID = DepositID;
-            deposit.AccountID = DepositID;
-            deposit.DepositID = DepositID;
-            deposit.DepositType = "Time Deposit";
-            deposit.InterestRate = 7.5;
-            deposit.CreationDate = new DateTime(2014, 4, 24, 14, 0, 0);
-            return deposit;
-        }
-    }
-
-    [DataContract]
-    public class DepositDetails {
-        [DataMember]
-        public Guid DepositID { get; set; }
-        [DataMember]
-        public Guid ClientID { get; set; }
-        [DataMember]
-        public Guid AccountID { get; set; }
-        [DataMember]
-        public string DepositType { get; set; } // Current Account, Time Deposit
-        [DataMember]
-        public double InterestRate { get; set; }
-        [DataMember]
-        public DateTime CreationDate { get; set; }
-    }
->>>>>>> 1f645dba5e5925b2e59e28bd92936cbe9eb9580b
 }
