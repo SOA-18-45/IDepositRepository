@@ -10,11 +10,12 @@ using System.ServiceModel.Description;
 using System.Runtime.Serialization;
 using System.Timers;
 using log4net;
+using NHibernate;
 using Contracts;
 
 namespace IDepositService {
     class Program {
-        private const string myAddress = "net.tcp://localhost:54321/IDepositRepository";
+        private const string myAddress = "net.tcp://localhost:50007/IDepositRepository";
         private static IServiceRepository serviceRepository;
 
         static void Main(string[] args) {
@@ -90,7 +91,26 @@ namespace IDepositService {
         }
 
         public DepositDetails GetDepositDetails(Guid DepositID) {
-            return null;
+            using (ISession session = NHibernateHelper.OpenSession())
+            {   DepositDetails found = session.QueryOver<DepositDetails>().Where(x => x.DepositID == DepositID).SingleOrDefault();
+
+                if (found != null) {
+                    DepositDetails depo = new DepositDetails();
+                    depo.AccountID = found.AccountID;
+                    depo.ClientID = found.ClientID;
+                    depo.DepositID = found.DepositID;
+                    depo.DepositType = found.DepositType;
+                    depo.CreationDate = found.CreationDate;
+                    depo.InterestRate = found.InterestRate;
+                    Logger.logger.Error("Got details of deposit.");
+
+                    return depo;
+
+                } else {
+                    Logger.logger.Error("Could not get details of deposit.");
+                    return null;
+                }
+            }
         }
     }
 }

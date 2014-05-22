@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" 
+                   assembly="IDepositRepository" 
+                   namespace="IDepositRepository">
+  
+  <class name="DepositDetails">
+    <id name="DepositID">
+      <generator class="guid" />
+    </id>
+    <property name="ClientID" />
+    <property name="AccountID" />
+    <property name="DepositType" />
+    <property name="InterestRate" />
+	<property name="CreationDate" />
+  </class>
+  
+</hibernate-mapping>
