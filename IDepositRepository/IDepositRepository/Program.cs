@@ -43,8 +43,8 @@ namespace IDepositService {
                 serviceRepository.registerService("IDepositRepository", myAddress);
                 Logger.logger.Info("Connected to IServiceRepository");
 
-                // Alive signal every 10 sec
-                Timer amAlive = new Timer(1000 * 10);
+                // Alive signal every 5 sec
+                Timer amAlive = new Timer(1000 * 5);
                 amAlive.Elapsed += new ElapsedEventHandler(Alive);
                 amAlive.AutoReset = true;
                 amAlive.Enabled = true;
