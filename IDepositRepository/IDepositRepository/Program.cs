@@ -105,24 +105,35 @@ namespace IDepositService
                     Boolean aexists = false;
                     foreach (AccountDetails ad in adlist)
                     {
-                        if (ad.AccountNumber = AccountID) //AccountNumber is String and AccountID Guid
+                        //if (ad.AccountNumber.Equals(AccountID.ToString())) //AccountNumber is String and AccountID Guid
+                        if (ad.AccountNumber = AccountID)
                         {
                             aexists = true;
                         }
                     }
                     if (!aexists)
-                    {
+                    { //possibly create account?
                         Logger.logger.Error("Account does not exist or belongs to another client.");
                         return Guid.Empty;
                     }
-                    DepositDetails deposit = new DepositDetails();
-                    deposit.ClientID = ClientID;
-                    deposit.DepositID = Guid.NewGuid();
-                    deposit.AccountID = AccountID;
-                    deposit.DepositType = DepositType;
-                    deposit.InterestRate = InterestRate;
-                    deposit.CreationDate = DateTime.Now;
-                    return deposit.DepositID;
+                    using (ISession session = NHibernateHelper.OpenSession())
+                    {
+                        using (ITransaction transaction = session.BeginTransaction())
+                        {
+                            DepositDetails deposit = new DepositDetails();
+                            deposit.ClientID = ClientID;
+                            deposit.DepositID = Guid.NewGuid();
+                            deposit.AccountID = AccountID;
+                            deposit.DepositType = DepositType;
+                            deposit.InterestRate = InterestRate;
+                            deposit.CreationDate = DateTime.Now;
+
+                            session.Save(deposit);
+                            transaction.Commit();
+                            Logger.logger.Info("Saved details of deposit.");
+                            return deposit.DepositID;
+                        }
+                    }
                 }
             }
 
@@ -141,7 +152,7 @@ namespace IDepositService
                         depo.DepositType = found.DepositType;
                         depo.CreationDate = found.CreationDate;
                         depo.InterestRate = found.InterestRate;
-                        Logger.logger.Error("Got details of deposit.");
+                        Logger.logger.Info("Got details of deposit.");
 
                         return depo;
 
