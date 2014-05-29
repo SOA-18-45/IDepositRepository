@@ -13,23 +13,19 @@ using log4net;
 using NHibernate;
 using Contracts;
 
-namespace IDepositService
-{
-    class Program
-    {
+namespace IDepositService {
+    class Program {
         private const string myAddress = "net.tcp://localhost:50002/IDepositRepository";
         private static IServiceRepository serviceRepository;
 
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             // Logger Config
             log4net.Config.XmlConfigurator.Configure();
             Logger.logger.Info("Logger initialized.");
 
             ServiceHost sh = new ServiceHost(typeof(DepositRepository), new Uri[] { new Uri(myAddress) });
 
-            try
-            {
+            try {
                 // Starting service
                 sh.AddServiceEndpoint(typeof(IDepositRepository), new NetTcpBinding(), myAddress);
                 sh.Open();
@@ -65,60 +61,50 @@ namespace IDepositService
                 Logger.logger.Info("Connection to IServiceRepository shut down.");
             }
 
-            catch (CommunicationException comEx)
-            {
+            catch (CommunicationException comEx) {
                 Console.WriteLine("Communication error: " + comEx.Message);
                 sh.Abort();
                 Console.ReadLine();
             }
         }
 
-        private static void Alive(object sender, EventArgs e)
-        {
+        private static void Alive(object sender, EventArgs e) {
             serviceRepository.isAlive("IDepositRepository");
             Logger.logger.Info("Sent isAlive signal.");
         }
 
 
-        public class Logger
-        {
+        public class Logger {
             internal static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         }
 
         [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
-        public class DepositRepository : IDepositRepository
-        {
+        public class DepositRepository : IDepositRepository {
             public Guid CreateDeposit(Guid ClientID, String AccountNumber, string DepositType, double InterestRate) {
                 string accountRepositoryAddress = serviceRepository.getServiceAddress("IAccountRepository");
                 ChannelFactory<IAccountRepository> cf = new ChannelFactory<IAccountRepository>(new NetTcpBinding(SecurityMode.None));
                 IAccountRepository accountService = cf.CreateChannel();
+
                 //check if ClientID exists
                 List<AccountDetails> adlist = accountService.GetAccountsById(ClientID);
-                if (adlist == null)
-                {
+                if (adlist == null) {
                     Logger.logger.Error("Client does not exist.");
                     return Guid.Empty;
                 }
-                else
-                {
+                else {
                     //check if AccountID exists
                     Boolean aexists = false;
-                    foreach (AccountDetails ad in adlist)
-                    {
-                        if (ad.AccountNumber.Equals(AccountNumber))
-                        {
+                    foreach (AccountDetails ad in adlist) {
+                        if (ad.AccountNumber.Equals(AccountNumber)) {
                             aexists = true;
                         }
                     }
-                    if (!aexists)
-                    {
+                    if (!aexists) {
                         Logger.logger.Error("Account does not exist or belongs to another client.");
                         return Guid.Empty;
                     }
-                    using (ISession session = NHibernateHelper.OpenSession())
-                    {
-                        using (ITransaction transaction = session.BeginTransaction())
-                        {
+                    using (ISession session = NHibernateHelper.OpenSession()) {
+                        using (ITransaction transaction = session.BeginTransaction()) {
                             DepositDetails deposit = new DepositDetails();
                             deposit.ClientID = ClientID;
                             deposit.DepositID = Guid.NewGuid();
@@ -136,14 +122,11 @@ namespace IDepositService
                 }
             }
 
-            public DepositDetails GetDepositDetails(Guid DepositID)
-            {
-                using (ISession session = NHibernateHelper.OpenSession())
-                {
+            public DepositDetails GetDepositDetails(Guid DepositID) {
+                using (ISession session = NHibernateHelper.OpenSession()) {
                     DepositDetails found = session.QueryOver<DepositDetails>().Where(x => x.DepositID == DepositID).SingleOrDefault();
 
-                    if (found != null)
-                    {
+                    if (found != null) {
                         DepositDetails depo = new DepositDetails();
                         depo.AccountNumber = found.AccountNumber;
                         depo.ClientID = found.ClientID;
@@ -156,8 +139,7 @@ namespace IDepositService
                         return depo;
 
                     }
-                    else
-                    {
+                    else {
                         Logger.logger.Error("Could not get details of deposit.");
                         return null;
                     }
