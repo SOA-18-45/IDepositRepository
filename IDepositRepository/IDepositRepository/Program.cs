@@ -88,7 +88,7 @@ namespace IDepositService
         [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
         public class DepositRepository : IDepositRepository
         {
-            public Guid CreateDeposit(Guid ClientID, Guid AccountID, string DepositType, double InterestRate) {
+            public Guid CreateDeposit(Guid ClientID, String AccountNumber, string DepositType, double InterestRate) {
                 string accountRepositoryAddress = serviceRepository.getServiceAddress("IAccountRepository");
                 ChannelFactory<IAccountRepository> cf = new ChannelFactory<IAccountRepository>(new NetTcpBinding(SecurityMode.None));
                 IAccountRepository accountService = cf.CreateChannel();
@@ -105,14 +105,13 @@ namespace IDepositService
                     Boolean aexists = false;
                     foreach (AccountDetails ad in adlist)
                     {
-                        //if (ad.AccountNumber.Equals(AccountID.ToString())) //AccountNumber is String and AccountID Guid
-                        if (ad.AccountNumber = AccountID)
+                        if (ad.AccountNumber.Equals(AccountNumber))
                         {
                             aexists = true;
                         }
                     }
                     if (!aexists)
-                    { //possibly create account?
+                    {
                         Logger.logger.Error("Account does not exist or belongs to another client.");
                         return Guid.Empty;
                     }
@@ -123,7 +122,7 @@ namespace IDepositService
                             DepositDetails deposit = new DepositDetails();
                             deposit.ClientID = ClientID;
                             deposit.DepositID = Guid.NewGuid();
-                            deposit.AccountID = AccountID;
+                            deposit.AccountNumber = AccountNumber;
                             deposit.DepositType = DepositType;
                             deposit.InterestRate = InterestRate;
                             deposit.CreationDate = DateTime.Now;
@@ -146,7 +145,7 @@ namespace IDepositService
                     if (found != null)
                     {
                         DepositDetails depo = new DepositDetails();
-                        depo.AccountID = found.AccountID;
+                        depo.AccountNumber = found.AccountNumber;
                         depo.ClientID = found.ClientID;
                         depo.DepositID = found.DepositID;
                         depo.DepositType = found.DepositType;
