@@ -80,6 +80,8 @@ namespace IDepositService {
 
         [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
         public class DepositRepository : IDepositRepository {
+            IDatabase db = null;
+
             public Guid CreateDeposit(Guid ClientID, String AccountNumber, string DepositType, double InterestRate) {
                 string accountRepositoryAddress = serviceRepository.getServiceAddress("IAccountRepository");
                 ChannelFactory<IAccountRepository> cf = new ChannelFactory<IAccountRepository>(new NetTcpBinding(SecurityMode.None));
@@ -103,41 +105,48 @@ namespace IDepositService {
                         Logger.logger.Error("Account does not exist or belongs to another client.");
                         return Guid.Empty;
                     }
-                    using (ISession session = NHibernateHelper.OpenSession()) {
-                        using (ITransaction transaction = session.BeginTransaction()) {
-                            DepositDetails deposit = new DepositDetails();
-                            deposit.ClientID = ClientID;
-                            deposit.DepositID = Guid.NewGuid();
-                            deposit.AccountNumber = AccountNumber;
-                            deposit.DepositType = DepositType;
-                            deposit.InterestRate = InterestRate;
-                            deposit.CreationDate = DateTime.Now;
-
-                            session.Save(deposit);
-                            transaction.Commit();
-                            Logger.logger.Info("Saved details of deposit.");
-                            return deposit.DepositID;
-                        }
-                    }
+                    Guid ret = db.SaveDeposit(ClientID, AccountNumber, DepositType, InterestRate);
+                    return ret;
                 }
             }
 
             public DepositDetails GetDepositDetails(Guid DepositID) {
+                DepositDetails depo = db.GetDeposit(DepositID);
+                return depo;
+            }
+        }
+
+        public interface IDatabase {
+            Guid SaveDeposit(Guid ClientID, string AccountNumber, String DepositType, double InterestRate);
+            DepositDetails GetDeposit(Guid DepositId);
+        }
+
+        public class NHibernateDatabase : IDatabase {
+            public Guid SaveDeposit(Guid ClientID, string AccountNumber, String DepositType, double InterestRate) {
+                using (ISession session = NHibernateHelper.OpenSession()) {
+                    using (ITransaction transaction = session.BeginTransaction()) {
+                        DepositDetails deposit = new DepositDetails();
+                        deposit.ClientID = ClientID;
+                        deposit.DepositID = Guid.NewGuid();
+                        deposit.AccountNumber = AccountNumber;
+                        deposit.DepositType = DepositType;
+                        deposit.InterestRate = InterestRate;
+                        deposit.CreationDate = DateTime.Now;
+
+                        session.Save(deposit);
+                        transaction.Commit();
+                        Logger.logger.Info("Saved details of deposit.");
+                        return deposit.DepositID;
+                    }
+                }
+            }
+            public DepositDetails GetDeposit(Guid DepositID) {
                 using (ISession session = NHibernateHelper.OpenSession()) {
                     DepositDetails found = session.QueryOver<DepositDetails>().Where(x => x.DepositID == DepositID).SingleOrDefault();
 
                     if (found != null) {
-                        DepositDetails depo = new DepositDetails();
-                        depo.AccountNumber = found.AccountNumber;
-                        depo.ClientID = found.ClientID;
-                        depo.DepositID = found.DepositID;
-                        depo.DepositType = found.DepositType;
-                        depo.CreationDate = found.CreationDate;
-                        depo.InterestRate = found.InterestRate;
                         Logger.logger.Info("Got details of deposit.");
-
-                        return depo;
-
+                        return found;
                     }
                     else {
                         Logger.logger.Error("Could not get details of deposit.");
@@ -146,5 +155,31 @@ namespace IDepositService {
                 }
             }
         }
+
+        //public class MockDatabase : IDatabase {
+        //    public Guid SaveDeposit(Guid ClientID, string AccountNumber, String DepositType, double InterestRate) {
+        //        DepositDetails deposit = new DepositDetails();
+        //        deposit.ClientID = ClientID;
+        //        deposit.DepositID = Guid.NewGuid();
+        //        deposit.AccountNumber = AccountNumber;
+        //        deposit.DepositType = DepositType;
+        //        deposit.InterestRate = InterestRate;
+        //        deposit.CreationDate = DateTime.Now;
+
+        //        Logger.logger.Info("Saved details of deposit.");
+        //        return deposit.DepositID;
+        //    }
+        //    public DepositDetails GetDeposit(Guid DepositID) {
+        //        DepositDetails deposit = new DepositDetails();
+        //        deposit.ClientID = Guid.NewGuid();
+        //        deposit.DepositID = Guid.NewGuid();
+        //        deposit.AccountNumber = "88 7777 6666 5555 4444 3333 2222";
+        //        deposit.DepositType = "TimeDeposit";
+        //        deposit.InterestRate = 4.4;
+        //        deposit.CreationDate = DateTime.Now;
+
+        //        return deposit;
+        //    }
+        //}
     }
 }
