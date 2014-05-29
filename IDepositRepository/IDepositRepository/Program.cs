@@ -82,9 +82,9 @@ namespace IDepositService {
         public class DepositRepository : IDepositRepository {
             IDatabase db = null;
 
-            public Guid CreateDeposit(Guid ClientID, String AccountNumber, string DepositType, double InterestRate) {
+            public Guid CreateDeposit(Guid ClientID, string AccountNumber, string DepositType, double InterestRate) {
                 string accountRepositoryAddress = serviceRepository.getServiceAddress("IAccountRepository");
-                ChannelFactory<IAccountRepository> cf = new ChannelFactory<IAccountRepository>(new NetTcpBinding(SecurityMode.None));
+                ChannelFactory<IAccountRepository> cf = new ChannelFactory<IAccountRepository>(new NetTcpBinding(SecurityMode.None), accountRepositoryAddress);
                 IAccountRepository accountService = cf.CreateChannel();
 
                 //check if ClientID exists

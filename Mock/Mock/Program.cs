@@ -21,6 +21,9 @@ namespace Mock {
                 ar.Open();
 
                 Console.ReadLine();
+
+                sr.Close();
+                ar.Close();
             }
             catch (CommunicationException commError) {
                 Console.WriteLine("Communication error: " + commError.Message);
