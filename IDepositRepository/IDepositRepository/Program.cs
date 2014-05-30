@@ -15,7 +15,7 @@ using Contracts;
 
 namespace IDepositService {
     class Program {
-        private const string myAddress = "net.tcp://localhost:50002/IDepositRepository";
+        private const string myAddress = "net.tcp://192.168.0.137:50002/IDepositRepository";
         private static IServiceRepository serviceRepository;
 
         static void Main(string[] args) {
@@ -48,7 +48,6 @@ namespace IDepositService {
                 Timer amAlive = new Timer(1000 * 5);
                 amAlive.Elapsed += new ElapsedEventHandler(Alive);
                 amAlive.AutoReset = true;
-                amAlive.Enabled = true;
                 amAlive.Start();
 
                 // Waiting for user to abort
@@ -69,8 +68,14 @@ namespace IDepositService {
         }
 
         private static void Alive(object sender, EventArgs e) {
-            serviceRepository.isAlive("IDepositRepository");
-            Logger.logger.Info("Sent isAlive signal.");
+            try
+            {
+                serviceRepository.isAlive("IDepositRepository");
+                Logger.logger.Info("Sent isAlive signal.");
+            }
+            catch (Exception ex) {
+                Logger.logger.Error("Could not send isAlive signal.");
+            }
         }
 
 

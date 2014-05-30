@@ -71,8 +71,12 @@ namespace Mock {
             return acc;
         }
 
-        public void UpdateAccountInformation(AccountDetails details) {
-            return;
+        public bool UpdateAccountInformation(AccountDetails details) {
+            return true;
+        }
+
+        public List<AccountDetails> GetAllAccounts() {
+            return null;
         }
 
         public List<AccountDetails> GetAccountsById(Guid ClientId) {
